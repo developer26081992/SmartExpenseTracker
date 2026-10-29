@@ -1,3 +1,4 @@
+import TransactionForm from "../components/TransactionForm";
 import TransactionCard from "../components/TransactionCard";
 import { calculateTotals } from "../utils/calculations";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
@@ -295,120 +296,22 @@ export default function HomeScreen() {
             />          ))
         )}
 
-        {/* ADD / EDIT FORM */}
-        {showForm ? (
-          <View style={styles.form}>
-            <Text style={styles.sectionTitle}>
-              {editingId !== null ? "Edit Transaction" : "New Transaction"}
-            </Text>
-
-            <Text style={styles.fieldLabel}>Transaction name</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="e.g. Groceries"
-              value={title}
-              onChangeText={setTitle}
-            />
-
-            <Text style={styles.fieldLabel}>Amount</Text>
-
-            <TextInput
-              style={styles.input}
-              placeholder="Enter amount"
-              value={amount}
-              onChangeText={setAmount}
-              keyboardType="decimal-pad"
-            />
-
-            <Text style={styles.fieldLabel}>Transaction type</Text>
-
-            <View style={styles.typeRow}>
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  type === "expense" && styles.selectedType,
-                ]}
-                onPress={() => changeTransactionType("expense")}
-              >
-                <Text
-                  style={[
-                    styles.typeText,
-                    type === "expense" && styles.selectedTypeText,
-                  ]}
-                >
-                  Expense
-                </Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.typeButton,
-                  type === "income" && styles.selectedType,
-                ]}
-                onPress={() => changeTransactionType("income")}
-              >
-                <Text
-                  style={[
-                    styles.typeText,
-                    type === "income" && styles.selectedTypeText,
-                  ]}
-                >
-                  Income
-                </Text>
-              </TouchableOpacity>
-            </View>
-
-            {/* CATEGORY SELECTION */}
-            <Text style={styles.fieldLabel}>Select category</Text>
-
-            <View style={styles.categoryContainer}>
-              {categoryOptions.map((option) => (
-                <TouchableOpacity
-                  key={option}
-                  style={[
-                    styles.categoryButton,
-                    category === option && styles.selectedCategoryButton,
-                  ]}
-                  onPress={() => setCategory(option)}
-                  activeOpacity={0.7}
-                >
-                  <Text
-                    style={[
-                      styles.categoryButtonText,
-                      category === option && styles.selectedCategoryText,
-                    ]}
-                  >
-                    {option}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <TouchableOpacity
-              style={styles.addButton}
-              onPress={saveTransaction}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.addButtonText}>
-                {editingId !== null ? "Save Changes" : "Save Transaction"}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.cancelButton} onPress={resetForm}>
-              <Text style={styles.cancelButtonText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            style={styles.addButton}
-            onPress={openAddForm}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.addButtonText}>+ Add Transaction</Text>
-          </TouchableOpacity>
-        )}
-
+        <TransactionForm
+          showForm={showForm}
+          editingId={editingId}
+          title={title}
+          amount={amount}
+          type={type}
+          category={category}
+          categoryOptions={categoryOptions}
+          onChangeTitle={setTitle}
+          onChangeAmount={setAmount}
+          onChangeCategory={setCategory}
+          onChangeType={changeTransactionType}
+          onSave={saveTransaction}
+          onCancel={resetForm}
+          onOpen={openAddForm}
+        />
         <Text style={styles.footer}>Smart spending starts with tracking.</Text>
       </ScrollView>
     </SafeAreaView>
@@ -525,98 +428,6 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: 6,
     textAlign: "center",
-  },
-  form: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 18,
-    padding: 18,
-    marginTop: 16,
-  },
-  fieldLabel: {
-    color: "#233B32",
-    fontSize: 13,
-    fontWeight: "700",
-    marginTop: 16,
-    marginBottom: 7,
-  },
-  input: {
-    backgroundColor: "#F4F7F6",
-    borderWidth: 1,
-    borderColor: "#DCE5E0",
-    borderRadius: 10,
-    padding: 13,
-    fontSize: 15,
-  },
-  typeRow: {
-    flexDirection: "row",
-    gap: 10,
-  },
-  typeButton: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: "#DCE5E0",
-    borderRadius: 10,
-    padding: 13,
-    alignItems: "center",
-  },
-  selectedType: {
-    backgroundColor: "#176B55",
-    borderColor: "#176B55",
-  },
-  typeText: {
-    color: "#233B32",
-    fontWeight: "700",
-  },
-  selectedTypeText: {
-    color: "#FFFFFF",
-  },
-  categoryContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 9,
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  categoryButton: {
-    borderWidth: 1,
-    borderColor: "#DCE5E0",
-    backgroundColor: "#F4F7F6",
-    borderRadius: 20,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-  },
-  selectedCategoryButton: {
-    backgroundColor: "#176B55",
-    borderColor: "#176B55",
-  },
-  categoryButtonText: {
-    color: "#233B32",
-    fontSize: 13,
-    fontWeight: "600",
-  },
-  selectedCategoryText: {
-    color: "#FFFFFF",
-  },
-  addButton: {
-    backgroundColor: "#176B55",
-    borderRadius: 15,
-    padding: 17,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  addButtonText: {
-    color: "#FFFFFF",
-    fontSize: 16,
-    fontWeight: "800",
-  },
-  cancelButton: {
-    padding: 14,
-    alignItems: "center",
-    marginTop: 4,
-  },
-  cancelButtonText: {
-    color: "#728078",
-    fontWeight: "700",
   },
   footer: {
     color: "#89958E",
