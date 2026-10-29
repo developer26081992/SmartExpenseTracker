@@ -1,3 +1,8 @@
+import TransactionCard from "../components/TransactionCard";
+import { calculateTotals } from "../utils/calculations";
+import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
+import type { Transaction, TransactionType } from "../types/transaction";
+
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useEffect, useRef, useState } from "react";
 import {
@@ -12,30 +17,9 @@ import {
   type ScrollViewInstance,
 } from "react-native";
 
-type TransactionType = "income" | "expense";
-
-type Transaction = {
-  id: number;
-  title: string;
-  category: string;
-  amount: number;
-  type: TransactionType;
-};
-
 const STORAGE_KEY = "@smart_expense_transactions";
 
-const EXPENSE_CATEGORIES = [
-  "Food",
-  "Transport",
-  "Bills",
-  "Shopping",
-  "Health",
-  "Education",
-  "Entertainment",
-  "Other",
-];
 
-const INCOME_CATEGORIES = ["Salary", "Business", "Allowance", "Gift", "Other"];
 
 const sampleTransactions: Transaction[] = [
   {
@@ -124,15 +108,7 @@ export default function HomeScreen() {
     saveTransactions();
   }, [transactions, storageLoaded]);
 
-  const totalIncome = transactions
-    .filter((item) => item.type === "income")
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  const totalExpenses = transactions
-    .filter((item) => item.type === "expense")
-    .reduce((sum, item) => sum + item.amount, 0);
-
-  const balance = totalIncome - totalExpenses;
+  const { totalIncome, totalExpenses, balance } = calculateTotals(transactions);
 
   const money = (value: number) =>
     `$${value.toLocaleString("en-US", {
@@ -311,60 +287,12 @@ export default function HomeScreen() {
           </View>
         ) : (
           transactions.map((item) => (
-            <View style={styles.transaction} key={item.id}>
-              <View style={styles.transactionTop}>
-                <View
-                  style={[
-                    styles.transactionIcon,
-                    item.type === "income"
-                      ? styles.incomeIcon
-                      : styles.expenseIcon,
-                  ]}
-                >
-                  <Text style={styles.iconText}>
-                    {item.type === "income" ? "+" : "-"}
-                  </Text>
-                </View>
-
-                <View style={styles.transactionDetails}>
-                  <Text style={styles.transactionTitle}>{item.title}</Text>
-                  <Text style={styles.transactionCategory}>
-                    {item.category}
-                  </Text>
-                </View>
-
-                <Text
-                  style={[
-                    styles.transactionAmount,
-                    item.type === "income"
-                      ? styles.incomeAmount
-                      : styles.expenseAmount,
-                  ]}
-                >
-                  {item.type === "income" ? "+" : "-"}
-                  {money(item.amount)}
-                </Text>
-              </View>
-
-              <View style={styles.actionRow}>
-                <TouchableOpacity
-                  style={styles.editButton}
-                  onPress={() => editTransaction(item)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.editButtonText}>Edit</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.deleteButton}
-                  onPress={() => deleteTransaction(item)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.deleteButtonText}>Delete</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          ))
+            <TransactionCard
+              key={item.id}
+              transaction={item}
+              onEdit={editTransaction}
+              onDelete={deleteTransaction}
+            />          ))
         )}
 
         {/* ADD / EDIT FORM */}
@@ -581,91 +509,6 @@ const styles = StyleSheet.create({
     color: "#728078",
     fontSize: 12,
   },
-  transaction: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 15,
-    padding: 15,
-    marginBottom: 10,
-  },
-  transactionTop: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  transactionIcon: {
-    width: 44,
-    height: 44,
-    borderRadius: 14,
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 13,
-  },
-  incomeIcon: {
-    backgroundColor: "#E1F5E9",
-  },
-  expenseIcon: {
-    backgroundColor: "#FCE9E7",
-  },
-  iconText: {
-    fontSize: 23,
-    fontWeight: "700",
-    color: "#176B55",
-  },
-  transactionDetails: {
-    flex: 1,
-  },
-  transactionTitle: {
-    color: "#233B32",
-    fontSize: 15,
-    fontWeight: "700",
-  },
-  transactionCategory: {
-    color: "#89958E",
-    fontSize: 12,
-    marginTop: 5,
-  },
-  transactionAmount: {
-    fontSize: 13,
-    fontWeight: "700",
-  },
-  incomeAmount: {
-    color: "#20A464",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  expenseAmount: {
-    color: "#D94F4F",
-    fontSize: 16,
-    fontWeight: "700",
-  },
-  actionRow: {
-    flexDirection: "row",
-    justifyContent: "flex-end",
-    gap: 10,
-    marginTop: 12,
-    paddingTop: 12,
-    borderTopWidth: 1,
-    borderTopColor: "#EEF2EF",
-  },
-  editButton: {
-    backgroundColor: "#E1F5E9",
-    borderRadius: 8,
-    paddingVertical: 9,
-    paddingHorizontal: 18,
-  },
-  editButtonText: {
-    color: "#176B55",
-    fontWeight: "700",
-  },
-  deleteButton: {
-    backgroundColor: "#FCE9E7",
-    borderRadius: 8,
-    paddingVertical: 9,
-    paddingHorizontal: 18,
-  },
-  deleteButtonText: {
-    color: "#D94F4F",
-    fontWeight: "700",
-  },
   emptyState: {
     backgroundColor: "#FFFFFF",
     borderRadius: 15,
@@ -782,3 +625,5 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+
