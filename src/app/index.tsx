@@ -1,10 +1,10 @@
-import TransactionForm from "../components/TransactionForm";
+﻿import TransactionForm from "../components/TransactionForm";
 import TransactionCard from "../components/TransactionCard";
 import { calculateTotals } from "../utils/calculations";
 import { EXPENSE_CATEGORIES, INCOME_CATEGORIES } from "../constants/categories";
 import type { Transaction, TransactionType } from "../types/transaction";
 
-import AsyncStorage from "@react-native-async-storage/async-storage";
+import { loadStoredTransactions, saveStoredTransactions } from "../services/transactionStorage";
 import { useEffect, useRef, useState } from "react";
 import {
   Alert,
@@ -18,7 +18,7 @@ import {
   type ScrollViewInstance,
 } from "react-native";
 
-const STORAGE_KEY = "@smart_expense_transactions";
+
 
 
 
@@ -70,19 +70,9 @@ export default function HomeScreen() {
   useEffect(() => {
     async function loadTransactions() {
       try {
-        const saved = await AsyncStorage.getItem(STORAGE_KEY);
+        const saved = await loadStoredTransactions();
 
-        if (saved !== null) {
-          const parsed: unknown = JSON.parse(saved);
-
-          setTransactions(
-            Array.isArray(parsed)
-              ? (parsed as Transaction[])
-              : sampleTransactions,
-          );
-        } else {
-          setTransactions(sampleTransactions);
-        }
+        setTransactions(saved ?? sampleTransactions);
       } catch (error) {
         console.error("Failed to load transactions:", error);
         setTransactions(sampleTransactions);
@@ -99,7 +89,7 @@ export default function HomeScreen() {
 
     async function saveTransactions() {
       try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(transactions));
+        await saveStoredTransactions(transactions);
       } catch (error) {
         console.error("Failed to save transactions:", error);
         Alert.alert("Storage Error", "Could not save your transactions.");
@@ -436,5 +426,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
 
 
