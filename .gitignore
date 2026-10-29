@@ -41,3 +41,8 @@ example
 # generated native folders
 /ios
 /android
+
+# Local development backups
+*.bak
+*.backup.txt
+package.backup.json
