@@ -99,6 +99,22 @@ export default function HomeScreen() {
     saveTransactions();
   }, [transactions, storageLoaded]);
 
+  const [searchQuery, setSearchQuery] = useState("");
+  const [transactionFilter, setTransactionFilter] = useState<
+    "all" | TransactionType
+  >("all");
+
+  const filteredTransactions = transactions.filter((transaction) => {
+    const matchesSearch =
+      transaction.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      transaction.category.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesType =
+      transactionFilter === "all" ||
+      transaction.type === transactionFilter;
+
+    return matchesSearch && matchesType;
+  });
   const { totalIncome, totalExpenses, balance } = calculateTotals(transactions);
 
   const money = (value: number) =>
@@ -261,23 +277,79 @@ export default function HomeScreen() {
           </View>
         </View>
 
+        {/* SEARCH AND FILTER */}
+        <View style={{ marginTop: 20, marginBottom: 16 }}>
+          <TextInput
+            placeholder="Search transactions..."
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+            style={{
+              backgroundColor: "#FFFFFF",
+              borderWidth: 1,
+              borderColor: "#DCE5E0",
+              borderRadius: 12,
+              padding: 14,
+              fontSize: 15,
+              marginBottom: 12,
+            }}
+          />
+
+          <View style={{ flexDirection: "row", gap: 8 }}>
+            {(["all", "income", "expense"] as const).map((option) => (
+              <TouchableOpacity
+                key={option}
+                onPress={() => setTransactionFilter(option)}
+                style={{
+                  flex: 1,
+                  paddingVertical: 12,
+                  borderRadius: 10,
+                  alignItems: "center",
+                  backgroundColor:
+                    transactionFilter === option ? "#176B55" : "#FFFFFF",
+                  borderWidth: 1,
+                  borderColor: "#DCE5E0",
+                }}
+              >
+                <Text
+                  style={{
+                    color:
+                      transactionFilter === option ? "#FFFFFF" : "#233B32",
+                    fontWeight: "700",
+                  }}
+                >
+                  {option === "all"
+                    ? "All"
+                    : option === "income"
+                      ? "Income"
+                      : "Expenses"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        </View>
         {/* TRANSACTIONS */}
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Recent Transactions</Text>
           <Text style={styles.transactionCount}>
-            {transactions.length} records
+            {filteredTransactions.length} records
           </Text>
         </View>
 
-        {transactions.length === 0 ? (
+        {filteredTransactions.length === 0 ? (
           <View style={styles.emptyState}>
-            <Text style={styles.emptyTitle}>No transactions yet</Text>
+            <Text style={styles.emptyTitle}>
+              {transactions.length === 0
+                ? "No transactions yet"
+                : "No matching transactions"}
+            </Text>
             <Text style={styles.emptyText}>
-              Add your first income or expense to get started.
+              {transactions.length === 0
+                ? "Add your first income or expense to get started."
+                : "Try another search or select a different filter."}
             </Text>
           </View>
         ) : (
-          transactions.map((item) => (
+          filteredTransactions.map((item) => (
             <TransactionCard
               key={item.id}
               transaction={item}
@@ -426,6 +498,9 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 });
+
+
+
 
 
 
